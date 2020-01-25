@@ -72,12 +72,9 @@
             <configuration>
               <mainClass>org.mondego.ics.uci.HTMLParser</mainClass>
             </configuration>
-          </execution>
-          
+          </execution>         
         </executions>
-      </plugin>
-      
-    
+      </plugin>  
     </plugins>
   </build>
   </project>

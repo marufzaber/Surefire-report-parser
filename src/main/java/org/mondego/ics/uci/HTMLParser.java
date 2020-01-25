@@ -27,8 +27,8 @@ public class HTMLParser {
 		if(args.length >=2) {
 			summaryFile = args[1];
 		}
-		
 		String directoryName = args[0];
+
 		List<String> htmlFiles = scanHTMLFiles(directoryName);
 		
 		for (int i = 0; i< htmlFiles.size(); i++) {
@@ -36,6 +36,10 @@ public class HTMLParser {
 		}		
 		ReportWriter reportWriter = new ReportWriter();
 		reportWriter.writeReportSummaryInCsv(summaryFile, testCountMapByCommit);
+		
+		Map<String, Integer> sum = new HashMap<String, Integer>();
+		sum.put("SUM", getSum(testCountMapByCommit));		
+		reportWriter.writeReportSummaryInCsv(summaryFile, sum);
 	}
 	
 	private static int getTotalTestsRun(String fileName) {
@@ -50,7 +54,6 @@ public class HTMLParser {
 			    Element row = rows.get(i);
 			    Elements cols = row.select("td");
 			    testCount = Integer.parseInt(cols.get(0).text());
-			       
 			    // First splits the filepath and get the last part.
 			    // Example file path - DONE-LOG/EKSTAZI/bval/3_0356c9d349fd76b43fcd9d4ba164327d387d4934_2.html
 			    String [] parts = fileName.split("/");
@@ -60,10 +63,11 @@ public class HTMLParser {
 			    if (html.length() > 40 && html.contains("_")) { 
 			    	String [] segments = html.split("_");
 			    	String hash = segments[1]; //gets 0356c9d349fd76b43fcd9d4ba164327d387d4934
+				     
 			    	if (testCountMapByCommit.containsKey(hash)) {
 			    		testCountMapByCommit.put(hash, testCountMapByCommit.get(hash) + testCount);
 			    	} else {
-			    		testCountMapByCommit.put(hash, 0);
+			    		testCountMapByCommit.put(hash, testCount);
 			    	}
 			    }
 			}
@@ -77,9 +81,18 @@ public class HTMLParser {
 		return testCount;
 	} 
 	
-	private static void Print() {
+	private static int getSum(Map<String, Integer> map) {
+		int sum = 0;
+		for (Map.Entry<String, Integer> entry: map.entrySet()) {
+			sum += entry.getValue();
+		}
+		return sum;
+	}
+	
+	private static void print() {
+		int sum = 0;
 		for (Map.Entry<String, Integer> entry: testCountMapByCommit.entrySet()) {
-			System.out.println(entry.getKey()+"		" + entry.getValue());
+			System.out.println(entry.getKey()+"		" + entry.getValue()	);
 		}
 	}
 	
