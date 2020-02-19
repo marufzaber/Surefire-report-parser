@@ -16,9 +16,20 @@ public class HTMLParser {
 	
 	private static Map<String, Integer> testCountMapByCommit = 
 			new HashMap<String, Integer>();
+	
+	private static Map<String, Integer> errorsCountMapByCommit = 
+			new HashMap<String, Integer>();
+	
+	private static Map<String, Integer> failuresCountMapByCommit = 
+			new HashMap<String, Integer>();
+	
+	private static Map<String, Integer> skippedCountMapByCommit = 
+			new HashMap<String, Integer>();
+	
 	private static String summaryFile = "XX";
 	
 	public static void main(String[] args) {
+		System.out.println("here");
 		// TODO Auto-generated method stub
 		if (args == null || args.length == 0) {
 			System.out.println("No argument passed... pass a directory as a parameter");
@@ -35,15 +46,39 @@ public class HTMLParser {
 			getTotalTestsRun(htmlFiles.get(i));
 		}		
 		ReportWriter reportWriter = new ReportWriter();
-		reportWriter.writeReportSummaryInCsv(summaryFile, testCountMapByCommit);
 		
-		Map<String, Integer> sum = new HashMap<String, Integer>();
-		sum.put("SUM", getSum(testCountMapByCommit));		
-		reportWriter.writeReportSummaryInCsv(summaryFile, sum);
+		// Writes total test count, error, failure, skip (in sequence)
+		reportWriter.writeReportSummaryInCsv(
+				summaryFile, 
+				testCountMapByCommit, 
+				errorsCountMapByCommit, 
+				failuresCountMapByCommit, 
+				skippedCountMapByCommit);
+		
+		Map<String, Integer> sum1 = new HashMap<String, Integer>();
+		sum1.put("SUM", getSum(testCountMapByCommit));	
+		sum1.put("AVERAGE", getAverage(testCountMapByCommit));
+		
+		Map<String, Integer> sum2 = new HashMap<String, Integer>();
+		sum2.put("SUM", getSum(errorsCountMapByCommit));	
+		sum2.put("AVERAGE", getAverage(errorsCountMapByCommit));
+
+		Map<String, Integer> sum3 = new HashMap<String, Integer>();
+		sum3.put("SUM", getSum(failuresCountMapByCommit));	
+		sum3.put("AVERAGE", getAverage(failuresCountMapByCommit));
+		
+		Map<String, Integer> sum4 = new HashMap<String, Integer>();
+		sum4.put("SUM", getSum(skippedCountMapByCommit));	
+		sum4.put("AVERAGE", getAverage(skippedCountMapByCommit));
+		
+		reportWriter.writeReportSummaryInCsv(summaryFile, sum1, sum2, sum3, sum4);
 	}
 	
 	private static int getTotalTestsRun(String fileName) {
 		int testCount = 0;
+		int errorsCount = 0;	
+		int failuresCount = 0;	
+		int skippedCount = 0;
 		File input = new File(fileName);
 		try {
 			Document doc = Jsoup.parse(input, "UTF-8");
@@ -54,6 +89,10 @@ public class HTMLParser {
 			    Element row = rows.get(i);
 			    Elements cols = row.select("td");
 			    testCount = Integer.parseInt(cols.get(0).text());
+			    errorsCount = Integer.parseInt(cols.get(1).text());
+			    failuresCount = Integer.parseInt(cols.get(2).text());
+			    skippedCount = Integer.parseInt(cols.get(3).text());
+
 			    // First splits the filepath and get the last part.
 			    // Example file path - DONE-LOG/EKSTAZI/bval/3_0356c9d349fd76b43fcd9d4ba164327d387d4934_2.html
 			    String [] parts = fileName.split("/");
@@ -69,6 +108,25 @@ public class HTMLParser {
 			    	} else {
 			    		testCountMapByCommit.put(hash, testCount);
 			    	}
+			    	
+			    	if (errorsCountMapByCommit.containsKey(hash)) {
+			    		errorsCountMapByCommit.put(hash, errorsCountMapByCommit.get(hash) + errorsCount);
+			    	} else {
+			    		errorsCountMapByCommit.put(hash, errorsCount);
+			    	}
+			    	
+			    	if (failuresCountMapByCommit.containsKey(hash)) {
+			    		failuresCountMapByCommit.put(hash, failuresCountMapByCommit.get(hash) + failuresCount);
+			    	} else {
+			    		failuresCountMapByCommit.put(hash, failuresCount);
+			    	}
+			    	
+			    	if (skippedCountMapByCommit.containsKey(hash)) {
+			    		skippedCountMapByCommit.put(hash, skippedCountMapByCommit.get(hash) + skippedCount);
+			    	} else {
+			    		skippedCountMapByCommit.put(hash, skippedCount);
+			    	}
+			    	
 			    }
 			}
 		} catch (IOException e) {
@@ -87,6 +145,15 @@ public class HTMLParser {
 			sum += entry.getValue();
 		}
 		return sum;
+	}
+	
+	private static int getAverage(Map<String, Integer> map) {
+		int sum = 0;
+		for (Map.Entry<String, Integer> entry: map.entrySet()) {
+			sum += entry.getValue();
+		}
+		
+		return map.size() == 0 ? 0 : (int)(sum / map.size());
 	}
 	
 	private static void print() {
