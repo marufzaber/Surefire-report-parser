@@ -72,7 +72,13 @@
             <configuration>
               <mainClass>org.mondego.ics.uci.HTMLParser</mainClass>
             </configuration>
-          </execution>         
+          </execution> 
+          <execution>
+            <id>second-cli</id>
+            <configuration>
+              <mainClass>org.mondego.ics.uci.CSVParser</mainClass>
+            </configuration>
+          </execution>        
         </executions>
       </plugin>  
     </plugins>

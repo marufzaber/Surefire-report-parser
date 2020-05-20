@@ -82,4 +82,37 @@ public class ReportWriter {
 	    	writeReportSummaryInCsv(csvFileName, record);
 	    }   
 	}
+	
+	public void writeReportSummaryInCsv(
+			String csvFileName, 
+			Map<String, Double> map1,
+			Map<String, Double> map2) {
+		
+		int count = 0;
+		double selectionSum = 0;
+		double testSum = 0;
+		try {
+		    for (Map.Entry<String, Double> entry: map1.entrySet()) {
+		    	count++;
+		    	selectionSum += entry.getValue();
+		    	testSum += map2.get(entry.getKey());
+		    	String [] record = {
+						Integer.toString(count),
+						entry.getKey(),
+						Double.toString(entry.getValue()),
+						Double.toString(map2.get(entry.getKey()))};
+		    	
+		    	writeReportSummaryInCsv(csvFileName, record);
+		    } 
+		    String [] record = {
+					Integer.toString(count),
+					"SUM",
+					Double.toString(selectionSum),
+					Double.toString(testSum)};
+	    	
+	    	writeReportSummaryInCsv(csvFileName, record);
+		} catch (NullPointerException e ) {
+			e.printStackTrace();
+		}
+	}
 }
